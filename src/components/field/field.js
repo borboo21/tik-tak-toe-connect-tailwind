@@ -1,53 +1,49 @@
 import { connect } from 'react-redux';
-import { ACTION_TYPES } from '../../store/action-types';
+import { setDraw, setEnd, setField, setPlayer } from '../../store/action-types';
 import { checkDraw, checkWinner } from '../../utils/check';
+import { Component } from 'react';
 
-export const FieldContainer = ({
-	field,
-	isGameEnded,
-	isDraw,
-	currentPlayer,
-	dispatch,
-}) => {
-	const setFieldValue = (i) => {
-		if (field[i]) return;
-		if (isGameEnded || isDraw) return;
-		let newValue = field.slice();
-		newValue[i] = currentPlayer;
-		const result = checkWinner(newValue, currentPlayer);
+export class FieldContainer extends Component {
+	setFieldValue = (i) => {
+		if (this.props.field[i]) return;
+		if (this.props.isGameEnded || this.props.isDraw) return;
+		let newValue = this.props.field.slice();
+		newValue[i] = this.props.currentPlayer;
+		const result = checkWinner(newValue, this.props.currentPlayer);
 		if (result) {
-			dispatch({ type: ACTION_TYPES.SET_END });
+			this.props.setEnd();
 		} else if (checkDraw(newValue)) {
-			dispatch({ type: ACTION_TYPES.SET_DRAW });
+			this.props.setDraw();
 		} else {
-			dispatch({ type: ACTION_TYPES.TOGGLE_PLAYER });
+			this.props.setPlayer();
 		}
-		dispatch({ type: ACTION_TYPES.SET_FIELD, payload: newValue });
+		this.props.setField(newValue);
 	};
 
-	return (
-		<div className="flex max-w-72 max-h-72 flex-wrap">
-			{field.map((btn, index) => {
-				return (
-					<span key={index}>
-						<button
-							key={index}
-							className="w-24 h-24 bg-cyan-50 cursor-pointer border-2 text-2xl"
-							style={{ color: btn ? 'black' : 'lightcyan' }}
-							disabled={isDraw || isGameEnded}
-							onClick={() => {
-								setFieldValue(index);
-							}}
-						>
-							{btn || '-'}
-						</button>
-					</span>
-				);
-			})}
-		</div>
-	);
-};
-
+	render() {
+		return (
+			<div className="flex max-w-72 max-h-72 flex-wrap">
+				{this.props.field.map((btn, index) => {
+					return (
+						<span key={index}>
+							<button
+								key={index}
+								className="w-24 h-24 bg-cyan-50 cursor-pointer border-2 text-2xl"
+								style={{ color: btn ? 'black' : 'lightcyan' }}
+								disabled={this.props.isDraw || this.props.isGameEnded}
+								onClick={() => {
+									this.setFieldValue(index);
+								}}
+							>
+								{btn || '-'}
+							</button>
+						</span>
+					);
+				})}
+			</div>
+		);
+	}
+}
 const mapStateToProps = (state) => ({
 	field: state.field,
 	isGameEnded: state.isGameEnded,
@@ -55,4 +51,11 @@ const mapStateToProps = (state) => ({
 	currentPlayer: state.currentPlayer,
 });
 
-export const Field = connect(mapStateToProps)(FieldContainer);
+const mapDispatchToPros = {
+	setEnd,
+	setDraw,
+	setPlayer,
+	setField,
+};
+
+export const Field = connect(mapStateToProps, mapDispatchToPros)(FieldContainer);
